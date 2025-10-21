@@ -7,54 +7,67 @@ csv_file = r"C:\Users\ahmad.satria.psi\Documents\Telkom\Daftar_Hadir_UT\source.c
 template_path = r"C:\Users\ahmad.satria.psi\Documents\Telkom\Daftar_Hadir_UT\Master_Daftar Hadir UT.docx"
 output_folder = r"C:\Users\ahmad.satria.psi\Documents\Telkom\Daftar_Hadir_UT\output"
 
-# Create folder if it doesn’t exist
 os.makedirs(output_folder, exist_ok=True)
 
-def replace_text_in_paragraphs(doc, replacements):
-    for p in doc.paragraphs:
-        for key, value in replacements.items():
-            if key in p.text:
-                inline = p.runs
-                for i in range(len(inline)):
-                    if key in inline[i].text:
-                        inline[i].text = inline[i].text.replace(key, value)
 
-def replace_text_in_tables(doc, replacements):
+def replace_text_in_paragraph(paragraph, replacements):
+    """Replace placeholders inside a single paragraph, preserving runs."""
+    full_text = ""
+    for run in paragraph.runs:
+        full_text += run.text
+
+    for key, value in replacements.items():
+        if key in full_text:
+            full_text = full_text.replace(key, value)
+
+    # Rewrite runs
+    if paragraph.runs:
+        paragraph.runs[0].text = full_text
+        for run in paragraph.runs[1:]:
+            run.text = ""
+    else:
+        paragraph.add_run(full_text)
+
+
+def replace_text_in_table(table, replacements):
+    """Replace text inside all cells of a table."""
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                replace_text_in_paragraph(paragraph, replacements)
+
+
+def process_document(template_path, output_folder, site_id, site_name):
+    """Open template, replace placeholders, save new file."""
+    doc = Document(template_path)
+
+    replacements = {
+        "%site_id%": site_id,
+        "%site_name%": site_name,
+        "<<site_id>>": site_id,
+        "<<site_name>>": site_name
+    }
+
+    # Replace in paragraphs
+    for paragraph in doc.paragraphs:
+        replace_text_in_paragraph(paragraph, replacements)
+
+    # Replace inside all tables
     for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for key, value in replacements.items():
-                    if key in cell.text:
-                        for p in cell.paragraphs:
-                            for run in p.runs:
-                                run.text = run.text.replace(key, value)
+        replace_text_in_table(table, replacements)
 
-# === Read CSV and process ===
+    safe_name = "".join(c if c.isalnum() or c in " -_." else "_" for c in site_name)
+    output_path = os.path.join(output_folder, f"{safe_name}.docx")
+    doc.save(output_path)
+    print(f"✅ Saved: {output_path}")
+
+
+# === MAIN LOOP ===
 with open(csv_file, encoding="utf-8-sig") as f:
     reader = csv.DictReader(f, delimiter=';')
     for row in reader:
         site_id = row['site_id'].strip()
         site_name = row['site_name'].strip()
-        
-        # Load the Word template
-        doc = Document(template_path)
-        
-        # Define what to replace
-        replacements = {
-            '%site_id%': site_id,
-            '%site_name%': site_name
-        }
-        
-        # Replace inside paragraphs and tables
-        #replace_text_in_paragraphs(doc, replacements)
-        replace_text_in_tables(doc, replacements)
-        
-        # Make safe filename
-        safe_name = "".join(c if c.isalnum() or c in " -_." else "_" for c in site_name)
-        output_path = os.path.join(output_folder, f"{safe_name}.docx")
-        
-        # Save file
-        doc.save(output_path)
-        print(f"Saved: {output_path}")
+        process_document(template_path, output_folder, site_id, site_name)
 
-print("✅ All files generated successfully!")
+print("🎉 All files generated successfully!")
