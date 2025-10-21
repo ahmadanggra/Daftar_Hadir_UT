@@ -1,6 +1,7 @@
 import csv
 import os
 from docx import Document
+from docx2pdf import convert
 
 # === Configuration ===
 csv_file = r"source.csv"
@@ -54,9 +55,12 @@ def process_document(template_path, output_folder, site_id, site_name):
     replace_text_in_table(doc.tables[0], replacements)
 
     safe_name = "".join(c if c.isalnum() or c in " -_." else "_" for c in site_name)
-    output_path = os.path.join(output_folder, f"{safe_name}.docx")
-    doc.save(output_path)
-    print(f"✅ Saved: {output_path}")
+    output_path_docx = os.path.join(output_folder, f"{safe_name}.docx")
+    output_path_pdf = os.path.join(output_folder, f"{safe_name}.pdf")
+    doc.save(output_path_docx)
+    convert(output_path_docx, output_path_pdf)
+    print(f"✅ Saved docx: {output_path_docx}")
+    print(f"✅ Saved pdf: {output_path_pdf}")
 
 
 # === MAIN LOOP ===
