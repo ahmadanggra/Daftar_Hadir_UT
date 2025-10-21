@@ -58,9 +58,7 @@ def process_document(template_path, output_folder, site_id, site_name):
     output_path_docx = os.path.join(output_folder, f"{safe_name}.docx")
     output_path_pdf = os.path.join(output_folder, f"{safe_name}.pdf")
     doc.save(output_path_docx)
-    convert(output_path_docx, output_path_pdf)
     print(f"✅ Saved docx: {output_path_docx}")
-    print(f"✅ Saved pdf: {output_path_pdf}")
 
 
 # === MAIN LOOP ===
@@ -71,4 +69,6 @@ with open(csv_file, encoding="utf-8-sig") as f:
         site_name = row['site_name'].strip()
         process_document(template_path, output_folder, site_id, site_name)
 
+print("✅ Convert all docx file into pdf")
+convert(r"output")
 print("🎉 All files generated successfully!")
