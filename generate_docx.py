@@ -3,9 +3,9 @@ import os
 from docx import Document
 
 # === Configuration ===
-csv_file = r"C:\Users\ahmad.satria.psi\Documents\Telkom\Daftar_Hadir_UT\source.csv"
-template_path = r"C:\Users\ahmad.satria.psi\Documents\Telkom\Daftar_Hadir_UT\Master_Daftar Hadir UT.docx"
-output_folder = r"C:\Users\ahmad.satria.psi\Documents\Telkom\Daftar_Hadir_UT\output"
+csv_file = r"source.csv"
+template_path = r"Master_Daftar Hadir UT.docx"
+output_folder = r"output"
 
 os.makedirs(output_folder, exist_ok=True)
 
