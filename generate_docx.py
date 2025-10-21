@@ -43,18 +43,15 @@ def process_document(template_path, output_folder, site_id, site_name):
 
     replacements = {
         "%site_id%": site_id,
-        "%site_name%": site_name,
-        "<<site_id>>": site_id,
-        "<<site_name>>": site_name
+        "%site_name%": site_name
     }
 
     # Replace in paragraphs
-    for paragraph in doc.paragraphs:
-        replace_text_in_paragraph(paragraph, replacements)
+    # for paragraph in doc.paragraphs:
+    #     replace_text_in_paragraph(paragraph, replacements)
 
-    # Replace inside all tables
-    for table in doc.tables:
-        replace_text_in_table(table, replacements)
+    # Replace inside first table found
+    replace_text_in_table(doc.tables[0], replacements)
 
     safe_name = "".join(c if c.isalnum() or c in " -_." else "_" for c in site_name)
     output_path = os.path.join(output_folder, f"{safe_name}.docx")
