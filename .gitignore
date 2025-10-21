@@ -1,0 +1,5 @@
+.venv/
+output/
+*.csv
+*.xlsx
+*.docx
