@@ -56,7 +56,6 @@ def process_document(template_path, output_folder, site_id, site_name):
 
     safe_name = "".join(c if c.isalnum() or c in " -_." else "_" for c in site_name)
     output_path_docx = os.path.join(output_folder, f"{safe_name}.docx")
-    output_path_pdf = os.path.join(output_folder, f"{safe_name}.pdf")
     doc.save(output_path_docx)
     print(f"✅ Saved docx: {output_path_docx}")
 
