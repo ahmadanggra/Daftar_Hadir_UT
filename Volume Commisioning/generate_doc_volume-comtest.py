@@ -1,50 +1,46 @@
-import csv
 import os
-import win32com.client as win32
+import pandas as pd
+from openpyxl import load_workbook
 
 # === Configuration ===
-csv_file = os.getcwd() + "\\source.csv"
-template_path = os.getcwd() + "\\Master_Volume_Comtest.xlsx"
-output_folder = os.getcwd() + "\\output"
+csv_file = os.path.join(os.getcwd(), "source.csv")
+template_path = os.path.join(os.getcwd(), "Master_Volume_Comtest.xlsx")
+output_folder = os.path.join(os.getcwd(), "output")
 
 os.makedirs(output_folder, exist_ok=True)
 
-def process_document(template_path, output_folder, service_link, site_name):
-    # Launch Excel
-    excel = win32.DispatchEx("Excel.Application")
-    excel.Visible = False
-    excel.ScreenUpdating = False
-    excel.DisplayAlerts = False
-    excel.EnableEvents = False
-    
-    # Open the master document
-    wb = excel.Workbooks.Open(template_path)
-    sheet = wb.Sheets("BOQ")
+def process_document(template_path, output_folder, service_link, site_name, single_site ):
+    # Load workbook using openpyxl
+    wb = load_workbook(template_path)
+    sheet = wb["BOQ"]
 
-    # Modify intended value
-    sheet.Range("C4").Value = ": " + service_link
-    sheet.Range("C5").Value = ": " + site_name
+    # Modify intended cells
+    sheet["C4"] = f": {service_link}"
+    sheet["C5"] = f": {site_name}"
 
-    # Save the document under a new name (keeps macros!)
-    new_name = service_link + "_" + site_name + ".xlsx"
+    # Save the document under a new name
+    if single_site:
+        new_name = f"{service_link}.xlsx"
+    else:
+        new_name = f"{service_link}_{site_name}.xlsx"
     output_path = os.path.join(output_folder, new_name)
-    wb.SaveAs(output_path)
 
+    wb.save(output_path)
+    wb.close()
 
-    # Close the new doc
-    wb.Close(SaveChanges=False)
-    excel.Quit()
-    print(f"✅ Saved new excel: {output_path}")
-    
+    print(f"✅ Saved new Excel: {output_path}")
+
 # === MAIN LOOP ===
-with open(csv_file, encoding="utf-8-sig") as f:
-    reader = csv.DictReader(f, delimiter=';')
-    for row in reader:
-        service_link = row['service_link'].strip()
-        site_name = service_link.split()
-        if len(site_name) == 4:
-            process_document(template_path, output_folder, service_link, site_name[1])
-            process_document(template_path, output_folder, service_link, site_name[3])
-        else:
-            process_document(template_path, output_folder, service_link, site_name[1])
+df = pd.read_csv(csv_file, delimiter=";", encoding="utf-8-sig")
+
+for _, row in df.iterrows():
+    service_link = row["service_link"].strip()
+    site_name = service_link.split()
+    is_single = True if len(site_name) == 2 else False
+    if len(site_name) == 4:
+        process_document(template_path, output_folder, service_link, site_name[1], is_single)
+        process_document(template_path, output_folder, service_link, site_name[3], is_single)
+    else:
+        process_document(template_path, output_folder, service_link, site_name[1], is_single)
+
 print("🎉 All files generated successfully!")
