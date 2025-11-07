@@ -58,7 +58,9 @@ def generate_excel():
             process_document(template_path, output_folder, service_link, site_name[1], is_single, wb_src, ws_name)
         else:
             ws_name = service_link
-            process_document(template_path, output_folder, service_link, service_link.split()[1], is_single, wb_src, ws_name)
+            tmp_text = service_link.split()
+            site_name = " ".join(tmp_text[1:])
+            process_document(template_path, output_folder, service_link, site_name, is_single, wb_src, ws_name)
     
     # Close source data workbook
     wb_src.close()
