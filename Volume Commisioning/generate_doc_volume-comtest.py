@@ -49,16 +49,16 @@ def generate_excel():
     # === MAIN LOOP ===
     for _, row in df.iterrows():
         service_link = row["service_link"].strip()
-        site_name = service_link.split()
-        is_single = True if len(site_name) == 2 else False
-        if len(site_name) == 4:
-            ws_name = site_name[0] + "_" + site_name[1]
+        site_name = service_link.split(" - ")
+        is_single = True if len(site_name) == 1 else False
+        if len(site_name) == 2:
+            ws_name = site_name[0].split()[0] + "_" + site_name[0].split()[1]
+            process_document(template_path, output_folder, service_link, site_name[0].split()[1], is_single, wb_src, ws_name)
+            ws_name = site_name[0].split()[0] + "_" + site_name[1]
             process_document(template_path, output_folder, service_link, site_name[1], is_single, wb_src, ws_name)
-            ws_name = site_name[0] + "_" + site_name[3]
-            process_document(template_path, output_folder, service_link, site_name[3], is_single, wb_src, ws_name)
         else:
-            ws_name = site_name[0] + "_" + site_name[1]
-            process_document(template_path, output_folder, service_link, site_name[1], is_single, wb_src, ws_name)
+            ws_name = service_link
+            process_document(template_path, output_folder, service_link, service_link.split()[1], is_single, wb_src, ws_name)
     
     # Close source data workbook
     wb_src.close()
