@@ -4,6 +4,7 @@ from openpyxl import load_workbook
 
 # === Configuration ===
 csv_file = os.path.join(os.getcwd(), "source.csv")
+data_file = os.path.join(os.getcwd(), "source_data.xlsx")
 template_path = os.path.join(os.getcwd(), "Master_Volume_Comtest.xlsx")
 output_folder = os.path.join(os.getcwd(), "output")
 
@@ -30,17 +31,23 @@ def process_document(template_path, output_folder, service_link, site_name, sing
 
     print(f"✅ Saved new Excel: {output_path}")
 
-# === MAIN LOOP ===
-df = pd.read_csv(csv_file, delimiter=";", encoding="utf-8-sig")
 
-for _, row in df.iterrows():
-    service_link = row["service_link"].strip()
-    site_name = service_link.split()
-    is_single = True if len(site_name) == 2 else False
-    if len(site_name) == 4:
-        process_document(template_path, output_folder, service_link, site_name[1], is_single)
-        process_document(template_path, output_folder, service_link, site_name[3], is_single)
-    else:
-        process_document(template_path, output_folder, service_link, site_name[1], is_single)
+def generate_excel():
+    # === MAIN LOOP ===
+    df = pd.read_csv(csv_file, delimiter=";", encoding="utf-8-sig")
 
-print("🎉 All files generated successfully!")
+    for _, row in df.iterrows():
+        service_link = row["service_link"].strip()
+        site_name = service_link.split()
+        is_single = True if len(site_name) == 2 else False
+        if len(site_name) == 4:
+            process_document(template_path, output_folder, service_link, site_name[1], is_single)
+            process_document(template_path, output_folder, service_link, site_name[3], is_single)
+        else:
+            process_document(template_path, output_folder, service_link, site_name[1], is_single)
+
+
+
+if __name__ == "__main__":
+    generate_excel()
+    print("🎉 All files generated successfully!")
