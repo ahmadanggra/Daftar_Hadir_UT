@@ -11,19 +11,22 @@ os.makedirs(output_folder, exist_ok=True)
 
 def process_document(template_path, output_folder, service_link, site_name):
     # Launch Excel
-    excel = win32.Dispatch("Excel.Application")
+    excel = win32.DispatchEx("Excel.Application")
     excel.Visible = False
-
+    excel.ScreenUpdating = False
+    excel.DisplayAlerts = False
+    excel.EnableEvents = False
+    
     # Open the master document
     wb = excel.Workbooks.Open(template_path)
     sheet = wb.Sheets("BOQ")
 
     # Modify intended value
-    sheet.Range("C4").Value = service_link
-    sheet.Range("C5").Value = site_name
+    sheet.Range("C4").Value = ": " + service_link
+    sheet.Range("C5").Value = ": " + site_name
 
     # Save the document under a new name (keeps macros!)
-    new_name = site_name + "_" + site_name + ".xlsx"
+    new_name = service_link + "_" + site_name + ".xlsx"
     output_path = os.path.join(output_folder, new_name)
     wb.SaveAs(output_path)
 
@@ -31,12 +34,17 @@ def process_document(template_path, output_folder, service_link, site_name):
     # Close the new doc
     wb.Close(SaveChanges=False)
     excel.Quit()
-    print(f"✅ Saved new excel: {output_folder}")
+    print(f"✅ Saved new excel: {output_path}")
     
 # === MAIN LOOP ===
 with open(csv_file, encoding="utf-8-sig") as f:
     reader = csv.DictReader(f, delimiter=';')
     for row in reader:
         service_link = row['service_link'].strip()
-        process_document(template_path, output_folder, service_link, service_link)
+        site_name = service_link.split()
+        if len(site_name) == 4:
+            process_document(template_path, output_folder, service_link, site_name[1])
+            process_document(template_path, output_folder, service_link, site_name[3])
+        else:
+            process_document(template_path, output_folder, service_link, site_name[1])
 print("🎉 All files generated successfully!")
