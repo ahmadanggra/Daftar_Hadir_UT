@@ -14,7 +14,10 @@ def process_document(template_path, output_folder, service_link, site_name, sing
     # Load workbook using openpyxl
     wb = load_workbook(template_path)
     sheet = wb["BOQ"]
-    ws_src = wb_src[ws_name]
+    if ws_name not in wb_src.sheetnames:
+        ws_src = wb_src["Default"]
+    else:
+        ws_src = wb_src[ws_name]
 
     # Modify intended cells
     sheet["C4"] = f": {service_link}"
